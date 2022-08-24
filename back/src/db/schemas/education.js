@@ -2,6 +2,11 @@ import { Schema, model } from "mongoose";
 
 const EducationSchema = new Schema(
   {
+    id: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
     school: {
       type: String,
       required: true,

@@ -1,7 +1,7 @@
 import is from "@sindresorhus/is";
 import { Router } from "express";
-import { Education, User } from "../db";
 import { login_required } from "../middlewares/login_required";
+import { eduService } from "../services/eduService";
 
 const educationRouter = Router();
 
@@ -17,11 +17,11 @@ educationRouter.post("/", login_required, async function (req, res, next) {
     const major = req.body.major;
     const degree = req.body.degree;
 
-    const id = await User.findById({ user_id: req.user_id })
-    
-    // 위 데이터를 Education db에 추가하기
-    const newEdu = await Education.create({ id, school, major, degree });
-    
+    const newEdu = await eduService.addEdu({
+      school,
+      major,
+      degree
+    })
     res.status(201).json(newEdu);
   } catch (error) {
     next(error);
@@ -38,8 +38,10 @@ educationRouter.put("/users/:id", login_required, async function(req, res, next)
     const major = req.body.major ?? null;
     const degree = req.body.degree ?? null;
 
+    const toUpdate = { school, major, degree };
+
     //해당 사용자 아이디로 Education 정보를 db에서 찾아 업데이트함. 
-    const updateEdu = await Education.findOneAndUpdate({user_id}, { school, major, degree });
+    const updateEdu = await eduService.setEdu({user_id, toUpdate});
 
     res.status(200).json(updateEdu);
   } catch (error) {
@@ -51,7 +53,7 @@ educationRouter.put("/users/:id", login_required, async function(req, res, next)
 educationRouter.get("/users/:id", login_required, async function(req, res, next) {
   try {
     const user_id = req.params.id;
-    const currentEduInfo = await Education.findById({ user_id });
+    const currentEduInfo = await eduService.getEduInfo({ user_id });
 
     res.status(200).send(currentEduInfo);
   } catch (error) {
